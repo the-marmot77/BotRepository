@@ -23,12 +23,19 @@ def auto_clicker(min_interval=1, max_interval=2):
             print("\nAuto-clicker started.")
 
         while clicking:
-
+            
+            try:
+                InventoryTab = pyautogui.locateOnScreen('TabBar.png')
+                
+            except pyautogui.ImageNotFoundException:
+                print('Unable to loacate inventory tab...')
+                continue
+                
             boost_time = target_time - time.time()
 
             if boost_time <= 0:
                 # Actions to boost again
-                pyautogui.locateOnScreen()
+                pyautogui.click(InventoryTab)
                 target_time = time.time() + 15
 
             interval = random.uniform(min_interval, max_interval)
