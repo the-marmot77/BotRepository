@@ -1,6 +1,5 @@
-import pyautogui
+import pyautogui, sys
 import time
-import datetime
 import keyboard
 import random
 
@@ -13,34 +12,30 @@ def auto_clicker(min_interval=1, max_interval=2):
     """
     clicking = False
     print("Press 'Alt + R' to start and 'Esc' to stop the auto-clicker.")
+    
+    target_time = time.time() + 15
 
     while True:
         if not clicking:
             keyboard.wait('alt+r')  # Waits until 'Alt + R' is pressed and released
             clicking = True
+            time.sleep(0.2)
             print("\nAuto-clicker started.")
 
         while clicking:
-            if keyboard.is_pressed('esc'):
-                clicking = False
-                time.sleep(0.2)  # Brief pause to ensure 'esc' is not immediately re-detected
-                print("\nAuto-clicker stopped.")
-                break
 
-            start_time = time.time()
+            boost_time = target_time - time.time()
 
-            wait_duration = 250
+            if boost_time <= 0:
+                # Actions to boost again
+                pyautogui.locateOnScreen()
+                target_time = time.time() + 15
 
-            boost_time = time.time() - start_time
-
-            if boost_time >= wait_duration:
-                # Actions to reboost
-            
-            # Perform two clicks
-            pyautogui.click()
-            pyautogui.click()
             interval = random.uniform(min_interval, max_interval)
+            pyautogui.doubleClick(interval=0.1)
             time.sleep(interval)
+            
+            # Make another random interval here for time between clicks/
 
             
 
