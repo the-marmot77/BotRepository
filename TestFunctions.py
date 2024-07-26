@@ -27,14 +27,19 @@ def check_and_execute_reboost():
     if elapsed_time > duration_limit:
         print("420 seconds have passed. Reboosting.")
         mouse = pyautogui.position()
-        inv = pyautogui.locateOnScreen("Inventory.PNG", confidence=0.9)
+        inv = pyautogui.locateOnScreen("Images\Inventory.PNG", confidence=0.9)
 
         if inv:
             pyautogui.moveTo(inv, duration=0.5)
             pyautogui.click(inv)
 
             # List of potion images in the order of priority
-            potions = ["4dose.PNG", "3dose.PNG", "2dose.PNG", "1dose.PNG"]
+            potions = [
+                "Images\4dose.PNG",
+                "Images\3dose.PNG",
+                "Images\2dose.PNG",
+                "Images\1dose.PNG",
+            ]
 
             for potion in potions:
                 try:
@@ -49,7 +54,7 @@ def check_and_execute_reboost():
                     print(f"Could not locate {potion}. Continuing to next potion.")
                     continue
 
-            prayer = pyautogui.locateOnScreen("Prayer.PNG", confidence=0.9)
+            prayer = pyautogui.locateOnScreen("Images\Prayer.PNG", confidence=0.9)
             time.sleep(1)
 
             if prayer:
@@ -68,7 +73,7 @@ def check_and_execute_reboost():
 
 def click_rapid_icon():
     """Click the specified icon at random intervals between a and b."""
-    global click  # Ensure we use the global click variable
+    global click  # Global click variable
     while click:
         if check_and_execute_reboost():
             print("Reboost Complete.")
@@ -77,18 +82,33 @@ def click_rapid_icon():
 
         random_interval = get_random_interval(30.0, 36.0)
         mouse = pyautogui.position()
-        icon = pyautogui.locateOnScreen("Rapid.PNG", confidence=0.9)
 
-        if icon:
-            pyautogui.moveTo(icon)
-            pyautogui.doubleClick(icon, interval=0.1)
-            pyautogui.moveTo(mouse)
-            print(f"Clicked on 'Rapid.PNG'.")
-        else:
-            print(f"Could not locate 'Rapid.PNG'.")
+        try:
+            # Attempt to locate the 'Rapid.PNG' icon
+            icon = pyautogui.locateOnScreen("Images\Rapid.PNG", confidence=0.9)
+            if not icon:
+                # If 'Rapid.PNG' is not found, click on the 'Prayer.PNG' icon first
+                prayer_icon = pyautogui.locateOnScreen(
+                    "Images\Prayer.PNG", confidence=0.9
+                )
+                if prayer_icon:
+                    pyautogui.click(prayer_icon)
+                    # Reattempt to locate 'Rapid.PNG' after clicking 'Prayer.PNG'
+                    icon = pyautogui.locateOnScreen("Images\Rapid.PNG", confidence=0.9)
 
-        print(f"Sleeping for: {random_interval:.2f} seconds")
-        time.sleep(random_interval)
+            if icon:
+                pyautogui.moveTo(icon)
+                pyautogui.doubleClick(icon, interval=0.1)
+                pyautogui.moveTo(mouse)
+                print(f"Clicked on 'Rapid.PNG'.")
+            else:
+                print("Could not locate 'Rapid.PNG'.")
+
+            print(f"Sleeping for: {random_interval:.2f} seconds")
+            time.sleep(random_interval)
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
 
 if __name__ == "__main__":
