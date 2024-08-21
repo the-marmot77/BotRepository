@@ -2,6 +2,7 @@ from PIL import ImageGrab
 from functools import partial
 import pyautogui
 import time
+import random
 
 # Configure ImageGrab to capture all screens
 ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
@@ -45,14 +46,14 @@ def click_color(color, tolerance=10):
 
 def click_logs_image():
     """Click on the logs image."""
-    icon1 = pyautogui.locateCenterOnScreen("Logs.PNG", confidence=0.9)
+    icon1 = pyautogui.locateCenterOnScreen("Logs2.PNG", confidence=0.9)
     if icon1:
         pyautogui.moveTo(icon1, duration=0.3)
         pyautogui.click(icon1)
         print(f"Clicked on 'Logs.PNG' at position {icon1}.")
         time.sleep(2)  # Pause for 1 second after clicking
 
-        icon2 = pyautogui.locateCenterOnScreen("XButton.PNG", confidence=0.5)
+        icon2 = pyautogui.locateCenterOnScreen("XButton2.PNG", confidence=0.5)
         if icon2:
             pyautogui.moveTo(icon2, duration=0.3)
             pyautogui.click(icon2)
