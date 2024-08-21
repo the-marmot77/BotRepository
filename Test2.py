@@ -2,87 +2,79 @@ from PIL import ImageGrab
 from functools import partial
 import pyautogui
 import time
-import random
 
 # Configure ImageGrab to capture all screens
 ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
 
-# Global variables for control and interval settings
-click = True
-duration_limit = 420  # Duration limit in seconds (7 minutes)
-start_time = time.time()
+# Define the RGB values for the colors you want to click
+purple_color = (144, 0, 173)  # Example RGB for purple
+white_color = (255, 255, 255)  # RGB for white
 
 
-def get_random_interval(min_val, max_val):
-    """Generate a random interval between min_val and max_val."""
-    return random.uniform(min_val, max_val)
+def find_color_position(color, tolerance=10):
+    """Find the position of a given color on the screen."""
+    width, height = pyautogui.size()
+    print(f"Screen size: {width}x{height}")
+    for x in range(0, width, 150):  # Step by 150 pixels horizontally
+        for y in range(0, height, 150):  # Step by 150 pixels vertically
+            current_color = pyautogui.pixel(x, y)
+            if pyautogui.pixelMatchesColor(x, y, color, tolerance=tolerance):
+                print(
+                    f"Matching color found at ({x}, {y}) with current_color: {current_color}"
+                )
+                return (x, y)
+            else:
+                print(f"No match at ({x}, {y}) - Current color: {current_color}")
+    return None
 
 
-def check_and_execute_reboost():
-    """Check if the duration limit has passed and execute a reboost action."""
-    global start_time  # Ensure we can reset the start time
-    current_time = time.time()
-    elapsed_time = current_time - start_time
-
-    if elapsed_time > duration_limit:
-        print("420 seconds have passed. Reboosting.")
-        mouse = pyautogui.position()
-
-            # List of potion images in the order of priority
-        images = ["Purple.PNG", "Logs.PNG", "White.PNG"]
-
-        for img in images:
-            try:
-                clicks = pyautogui.locateOnScreen(img, confidence=0.7)
-                if clicks:
-                    pyautogui.click(clicks, duration=0.5)
-                    print(f"Clicked on {img}.")
-                    # Reset the timer after a successful click
-                    start_time = time.time()
-                    break  # Exit the loop after clicking the first available potion
-            except pyautogui.ImageNotFoundException:
-                print(f"Could not locate {img}. Continuing to next potion.")
-                continue
-
-        prayer = pyautogui.locateOnScreen("Prayer.PNG", confidence=0.7)
-        time.sleep(1)
-
-        if prayer:
-            pyautogui.click(prayer, duration=0.5)
-            print("Clicked on Prayer tab.")
-        else:
-            print("Unable to locate prayer tab.")
-
-        pyautogui.moveTo(mouse)
-        print(f"Reboost successful.")
-        return True
-    return False
+def click_color(color, tolerance=10):
+    """Find and click the given color on the screen."""
+    pos = find_color_position(color, tolerance)
+    if pos:
+        pyautogui.moveTo(pos, duration=0.3)
+        pyautogui.keyDown('shift')
+        pyautogui.click(pos)
+        pyautogui.keyUp('shift')
+        print(f"Clicked on color at position {pos}.")
+        time.sleep(2)  # Pause for 1 second between clicks
+        
+    else:
+        print(f"Could not locate the color {color} on the screen.")
 
 
-def click_rapid_icon():
-    """Click the specified icon at random intervals between a and b."""
-    global click  # Ensure we use the global click variable
-    while click:
-        if check_and_execute_reboost():
-            print("Reboost Complete.")
-            time.sleep(5)
-            continue
+def click_logs_image():
+    """Click on the logs image."""
+    icon1 = pyautogui.locateCenterOnScreen("Logs.PNG", confidence=0.9)
+    if icon1:
+        pyautogui.moveTo(icon1, duration=0.3)
+        pyautogui.click(icon1)
+        print(f"Clicked on 'Logs.PNG' at position {icon1}.")
+        time.sleep(2)  # Pause for 1 second after clicking
 
-        random_interval = get_random_interval(30.0, 36.0)
-        mouse = pyautogui.position()
-        icon = pyautogui.locateOnScreen("Rapid.PNG", confidence=0.9)
+        icon2 = pyautogui.locateCenterOnScreen("XButton.PNG", confidence=0.5)
+        if icon2:
+            pyautogui.moveTo(icon2, duration=0.3)
+            pyautogui.click(icon2)
+            print(f"Clicked on 'XButton.PNG' at position {icon2}.")
+            time.sleep(1)  # Pause for 1 second after clicking
 
-        if icon:
-            pyautogui.moveTo(icon)
-            pyautogui.doubleClick(icon, interval=0.1)
-            pyautogui.moveTo(mouse)
-            print(f"Clicked on 'Rapid.PNG'.")
-        else:
-            print(f"Could not locate 'Rapid.PNG'.")
+    else:
+        print(f"Could not locate 'Logs.PNG'.")
 
-        print(f"Sleeping for: {random_interval:.2f} seconds")
-        time.sleep(random_interval)
+
+def click_colors_and_image_in_order():
+    
+    """Click on the defined colors and image sequentially on the screen."""
+    click_color(purple_color)
+    click_logs_image()
+    click_color(white_color)
+    pyautogui.press('space')
 
 
 if __name__ == "__main__":
-    click_rapid_icon()
+    for i in range(10):  # Loop 10 times
+        print(f"Iteration {i+1}")
+        click_colors_and_image_in_order()
+        time.sleep(70)  # Optional pause between iterations
+    print("Completed 10 iterations.")
