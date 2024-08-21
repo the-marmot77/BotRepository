@@ -30,16 +30,24 @@ def find_color_position(color, tolerance=10):
 
 
 def click_color(color, tolerance=10):
-    """Find and click the given color on the screen."""
+    """Find and click the given color on the screen with random offset."""
     pos = find_color_position(color, tolerance)
     if pos:
-        pyautogui.moveTo(pos, duration=0.3)
-        pyautogui.keyDown('shift')
-        pyautogui.click(pos)
-        pyautogui.keyUp('shift')
-        print(f"Clicked on color at position {pos}.")
-        time.sleep(2)  # Pause for 1 second between clicks
-        
+        # Apply random offsets to the detected position
+        offset_x = random.randint(-10, 10)
+        offset_y = random.randint(-10, 10)
+        new_pos = (pos[0] + offset_x, pos[1] + offset_y)
+
+        pyautogui.moveTo(new_pos, duration=random.uniform(0.3, 1.0))
+        pyautogui.keyDown("shift")
+        pyautogui.click(new_pos)
+        pyautogui.keyUp("shift")
+        print(
+            f"Clicked on color at position {new_pos} with offsets ({offset_x}, {offset_y})."
+        )
+        time.sleep(
+            random.uniform(0.5, 1.5)
+        )  # Pause for a random interval between clicks
     else:
         print(f"Could not locate the color {color} on the screen.")
 
@@ -48,34 +56,36 @@ def click_logs_image():
     """Click on the logs image."""
     icon1 = pyautogui.locateCenterOnScreen("Logs2.PNG", confidence=0.9)
     if icon1:
-        pyautogui.moveTo(icon1, duration=0.3)
+        pyautogui.moveTo(icon1, duration=random.uniform(0.3, 1.0))
         pyautogui.click(icon1)
         print(f"Clicked on 'Logs.PNG' at position {icon1}.")
-        time.sleep(2)  # Pause for 1 second after clicking
+        time.sleep(
+            random.uniform(0.5, 1.5)
+        )  # Pause for a random interval after clicking
 
         icon2 = pyautogui.locateCenterOnScreen("XButton2.PNG", confidence=0.5)
         if icon2:
-            pyautogui.moveTo(icon2, duration=0.3)
+            pyautogui.moveTo(icon2, duration=random.uniform(0.3, 1.0))
             pyautogui.click(icon2)
             print(f"Clicked on 'XButton.PNG' at position {icon2}.")
-            time.sleep(1)  # Pause for 1 second after clicking
-
+            time.sleep(
+                random.uniform(0.5, 1.5)
+            )  # Pause for a random interval after clicking
     else:
         print(f"Could not locate 'Logs.PNG'.")
 
 
 def click_colors_and_image_in_order():
-    
     """Click on the defined colors and image sequentially on the screen."""
     click_color(purple_color)
     click_logs_image()
     click_color(white_color)
-    pyautogui.press('space')
+    pyautogui.press("space")
 
 
 if __name__ == "__main__":
     for i in range(10):  # Loop 10 times
         print(f"Iteration {i+1}")
         click_colors_and_image_in_order()
-        time.sleep(70)  # Optional pause between iterations
+        time.sleep(random.uniform(70, 75))  # Random pause between iterations
     print("Completed 10 iterations.")
