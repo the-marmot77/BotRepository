@@ -16,8 +16,8 @@ def find_color_position(color, tolerance=10):
     """Find the position of a given color on the screen."""
     width, height = pyautogui.size()
     print(f"Screen size: {width}x{height}")
-    for x in range(0, width, 150):  # Step by 150 pixels horizontally
-        for y in range(0, height, 150):  # Step by 150 pixels vertically
+    for x in range(0, width, int(width/15)):  # Step by 100 pixels horizontally
+        for y in range(int(height/2), height, 100):  # Step by 100 pixels vertically
             current_color = pyautogui.pixel(x, y)
             if pyautogui.pixelMatchesColor(x, y, color, tolerance=tolerance):
                 print(
@@ -34,8 +34,8 @@ def click_color(color, tolerance=10):
     pos = find_color_position(color, tolerance)
     if pos:
         # Apply random offsets to the detected position
-        offset_x = random.randint(-10, 10)
-        offset_y = random.randint(-10, 10)
+        offset_x = random.randint(0, 25)
+        offset_y = random.randint(0, 25)
         new_pos = (pos[0] + offset_x, pos[1] + offset_y)
 
         pyautogui.moveTo(new_pos, duration=random.uniform(0.3, 1.0))
@@ -49,6 +49,7 @@ def click_color(color, tolerance=10):
             random.uniform(0.5, 1.5)
         )  # Pause for a random interval between clicks
     else:
+        
         print(f"Could not locate the color {color} on the screen.")
 
 
@@ -63,7 +64,7 @@ def click_logs_image():
             random.uniform(0.5, 1.5)
         )  # Pause for a random interval after clicking
 
-        icon2 = pyautogui.locateCenterOnScreen("XButton2.PNG", confidence=0.5)
+        icon2 = pyautogui.locateCenterOnScreen("XButton2.PNG", confidence=0.8)
         if icon2:
             pyautogui.moveTo(icon2, duration=random.uniform(0.3, 1.0))
             pyautogui.click(icon2)
@@ -74,11 +75,20 @@ def click_logs_image():
     else:
         print(f"Could not locate 'Logs.PNG'.")
 
+def move_to_random():
+    x, y = pyautogui.size()
+    randX = random.uniform(x, 1)
+    randY = random.uniform(y, 1)
+    pyautogui.moveTo(randX, randY, duration=random.uniform(0, 3))
+
 
 def click_colors_and_image_in_order():
     """Click on the defined colors and image sequentially on the screen."""
+    move_to_random()
     click_color(purple_color)
+    move_to_random()
     click_logs_image()
+    move_to_random()
     click_color(white_color)
     pyautogui.press("space")
 
