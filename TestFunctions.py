@@ -1,4 +1,6 @@
-from PIL import ImageGrab
+# OPEN CV ALSO REQUIRED
+
+from PIL import ImageGrab # Required install for this to run properly
 from functools import partial
 import pyautogui
 import time

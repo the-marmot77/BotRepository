@@ -9,7 +9,7 @@ ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
 
 # Global variables for control and interval settings
 click = True
-duration_limit = 1024  # Duration limit in seconds (7 minutes)
+duration_limit = 420  # Duration limit in seconds (7 minutes)
 start_time = time.time()
 
 
@@ -27,41 +27,34 @@ def check_and_execute_reboost():
     if elapsed_time > duration_limit:
         print("420 seconds have passed. Reboosting.")
         mouse = pyautogui.position()
-        inv = pyautogui.locateOnScreen("Inventory.PNG", confidence=0.7)
-
-        if inv:
-            pyautogui.moveTo(inv, duration=0.5)
-            pyautogui.click(inv)
 
             # List of potion images in the order of priority
-            potions = ["Images\4dose.PNG", "Images\3dose.PNG", "Images\2dose.PNG", "Images\1dose.PNG"]
+        images = ["Purple.PNG", "Logs.PNG", "White.PNG"]
 
-            for potion in potions:
-                try:
-                    pot = pyautogui.locateOnScreen(potion, confidence=0.7)
-                    if pot:
-                        pyautogui.click(pot, duration=0.5)
-                        print(f"Clicked on {potion}.")
-                        # Reset the timer after a successful click
-                        start_time = time.time()
-                        break  # Exit the loop after clicking the first available potion
-                except pyautogui.ImageNotFoundException:
-                    print(f"Could not locate {potion}. Continuing to next potion.")
-                    continue
+        for img in images:
+            try:
+                clicks = pyautogui.locateOnScreen(img, confidence=0.7)
+                if clicks:
+                    pyautogui.click(clicks, duration=0.5)
+                    print(f"Clicked on {img}.")
+                    # Reset the timer after a successful click
+                    start_time = time.time()
+                    break  # Exit the loop after clicking the first available potion
+            except pyautogui.ImageNotFoundException:
+                print(f"Could not locate {img}. Continuing to next potion.")
+                continue
 
-            prayer = pyautogui.locateOnScreen("Prayer.PNG", confidence=0.7)
-            time.sleep(1)
+        prayer = pyautogui.locateOnScreen("Prayer.PNG", confidence=0.7)
+        time.sleep(1)
 
-            if prayer:
-                pyautogui.click(prayer, duration=0.5)
-                print("Clicked on Prayer tab.")
-            else:
-                print("Unable to locate prayer tab.")
-
-            pyautogui.moveTo(mouse)
-            print(f"Reboost successful.")
+        if prayer:
+            pyautogui.click(prayer, duration=0.5)
+            print("Clicked on Prayer tab.")
         else:
-            print(f"Could not locate inventory.")
+            print("Unable to locate prayer tab.")
+
+        pyautogui.moveTo(mouse)
+        print(f"Reboost successful.")
         return True
     return False
 
