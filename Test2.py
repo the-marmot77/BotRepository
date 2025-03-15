@@ -7,7 +7,6 @@ import random
 # Configure ImageGrab to capture all screens
 ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
 
-<<<<<<< HEAD
 # Global variables for control and interval settings
 click = True
 duration_limit = 1024  # Duration limit in seconds (7 minutes)
@@ -94,7 +93,7 @@ def click_rapid_icon():
 
 if __name__ == "__main__":
     click_rapid_icon()
-=======
+main
 # Define the RGB values for the colors you want to click
 purple_color = (144, 0, 173)  # Example RGB for purple
 white_color = (255, 255, 255)  # RGB for white
@@ -187,4 +186,3 @@ if __name__ == "__main__":
         click_colors_and_image_in_order()
         time.sleep(random.uniform(70, 75))  # Random pause between iterations
     print("Completed 10 iterations.")
->>>>>>> c92530759bf9a16107a92103dcd442155afb3a22
