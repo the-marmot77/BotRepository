@@ -3,6 +3,7 @@ from functools import partial
 import pyautogui
 import time
 import random
+from pyclick import HumanClicker
 
 # Configure ImageGrab to capture all screens
 ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
@@ -10,6 +11,8 @@ ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
 # Define the RGB value for the purple color
 purple_color = (144, 0, 173)
 
+# Initialize Human clicks
+hc = HumanClicker()
 
 def find_color_position(color, tolerance=10):
     """Find the position of a given color on the screen."""
@@ -28,7 +31,7 @@ def click_images(image):
     for _ in range(3):
         icon = pyautogui.locateCenterOnScreen(image, confidence=0.8)
         if icon:
-            pyautogui.moveTo(icon, duration=random.uniform(0.3, 1.0))
+            hc.move((icon),duration=random.uniform(0.8, 2.0))
             pyautogui.click(icon)
             print(f"Clicked on {image} at position {icon}.")
             time.sleep(random.uniform(0.5, 1.5))
@@ -44,7 +47,7 @@ def click_color(color, tolerance=10):
         offset_x, offset_y = random.randint(-10, 10), random.randint(-10, 10)
         new_pos = (pos[0] + offset_x, pos[1] + offset_y)
 
-        pyautogui.moveTo(new_pos, duration=random.uniform(0.3, 1.0))
+        hc.move((new_pos),duration=random.uniform(0.8, 2.0))
         pyautogui.keyDown("shift")
         pyautogui.click(new_pos)
         pyautogui.keyUp("shift")
@@ -56,14 +59,14 @@ def click_logs_image():
     """Click on the logs image and close the interface if found."""
     icon1 = pyautogui.locateCenterOnScreen("MahogLog.png", confidence=0.8)
     if icon1:
-        pyautogui.moveTo(icon1, duration=random.uniform(0.3, 1.0))
+        hc.move((icon1),duration=random.uniform(0.8, 2.0))
         pyautogui.click(icon1)
         print(f"Clicked on 'MahogLog.PNG' at position {icon1}.")
         time.sleep(random.uniform(0.5, 1.5))
 
         icon2 = pyautogui.locateCenterOnScreen("XButton2.PNG", confidence=0.8)
         if icon2:
-            pyautogui.moveTo(icon2, duration=random.uniform(0.3, 1.0))
+            hc.move((icon2),duration=random.uniform(0.8, 2.0))
             pyautogui.click(icon2)
             print(f"Clicked on 'XButton.PNG' at position {icon2}.")
             time.sleep(random.uniform(0.5, 1.5))
@@ -73,7 +76,7 @@ def click_spell_image():
     """Click on the spell image if found."""
     icon = pyautogui.locateCenterOnScreen("Spell1.PNG", confidence=0.9)
     if icon:
-        pyautogui.moveTo(icon, duration=random.uniform(0.3, 1.0))
+        hc.move((icon),duration=random.uniform(0.8, 2.0))
         pyautogui.click(icon)
         print(f"Clicked on 'Spell1.PNG' at position {icon}.")
         time.sleep(random.uniform(0.5, 1.5))
