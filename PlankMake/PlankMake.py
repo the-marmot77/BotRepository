@@ -96,7 +96,7 @@ def click_colors_and_image_in_order():
 
 
 if __name__ == "__main__":
-    for i in range(15):
+    for i in range(30):
         print(f"Iteration {i+1}")
         click_colors_and_image_in_order()
         time.sleep(random.uniform(95, 105))  # Random pause between iterations
