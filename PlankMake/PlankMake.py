@@ -45,13 +45,13 @@ def click_image(image_path):
 
 def click_colors_and_image_in_order():
     click_color(purple_color)
-    click_image("PlankMake\MahogPlank.png")
-    click_image("PlankMake\MahogLog.png")
-    click_image("PlankMake\XButton2.PNG")
+    click_image("PlankMake\BotImages\MahogPlank.png")
+    click_image("PlankMake\BotImages\MahogLog.png")
+    click_image("PlankMake\BotImages\XButton2.PNG")
     pyautogui.press("f4")
     time.sleep(random.uniform(0.1, 0.5))
-    click_image("PlankMake\Spell1.PNG")
-    click_image("PlankMake\MahogLog.PNG")
+    click_image("PlankMake\BotImages\Spell1.PNG")
+    click_image("PlankMake\BotImages\MahogLog.PNG")
     time.sleep(random.uniform(0.1, 0.5))
     pyautogui.press("f1")
 
