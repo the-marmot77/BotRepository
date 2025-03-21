@@ -13,7 +13,10 @@ hc = HumanClicker()
 # Paths to all images
 IMAGE_PATHS = {
     "inventory": "PlankMake/BotImages/Inventory.png",
-    "prayer": "PlankMake/BotImages/Prayer_icon.png",
+    "prayers": [
+        "PlankMake/BotImages/Prayer_icon.png",
+        "PlankMake/BotImages/Prayer_icon2.png"
+    ],
     "rapid": "PlankMake/BotImages/Rapid_Heal.png",
     "potions": [
         "PlankMake/BotImages/Super_combat_potion(4).png",
@@ -23,13 +26,11 @@ IMAGE_PATHS = {
     ],
 }
 
-# Click settings
 CLICK_INTERVAL_RANGE = (30.0, 36.0)
-DURATION_LIMIT = 420  # 7 minutes reboost timer
+DURATION_LIMIT = 420
 start_time = time.time()
 
 def capture_screen():
-    """Takes a single screenshot of the screen and returns it as a NumPy array."""
     screenshot = pyautogui.screenshot()
     return np.array(screenshot)
 
@@ -39,7 +40,7 @@ def locate_and_click(image_path, is_double_click=False, confidence=0.15):
 
     if found_rect:
         center_x, center_y = found_rect.get_center()
-        hc.move((center_x, center_y), duration=random.uniform(0.8, 2.0))
+        hc.move((center_x, center_y), duration=random.uniform(1.1, 3.0))
 
         if is_double_click:
             pyautogui.doubleClick(interval=0.1)
@@ -52,9 +53,13 @@ def locate_and_click(image_path, is_double_click=False, confidence=0.15):
         print(f"❌ Could not locate {image_path}.")
         return False
 
+def locate_and_click_any(image_paths, is_double_click=False, confidence=0.15):
+    for path in image_paths:
+        if locate_and_click(path, is_double_click=is_double_click, confidence=confidence):
+            return True
+    return False
 
 def check_and_execute_reboost():
-    """Check if the duration limit has passed and execute a reboost action."""
     global start_time
 
     if time.time() - start_time > DURATION_LIMIT:
@@ -63,18 +68,20 @@ def check_and_execute_reboost():
         if locate_and_click(IMAGE_PATHS["inventory"]):
             for potion in IMAGE_PATHS["potions"]:
                 if locate_and_click(potion, confidence=0.7):
-                    start_time = time.time()  # Reset timer after drinking a potion
-                    break  # Stop after finding the highest dose
+                    start_time = time.time()
+                    break
 
-            locate_and_click(IMAGE_PATHS["prayer"])  # Open prayer tab after drinking potion
+            locate_and_click_any(IMAGE_PATHS["prayers"])
             print("✅ Reboost successful.")
         else:
             print("❌ Could not locate inventory.")
         return True
     return False
 
-def click_rapid_icon():
-    """Continuously clicks 'Rapid_Heal.png' at random intervals while handling reboosting."""
+def run_actions():
+    hc.move((100, 100), 2)
+    e = 0
+
     while True:
         if check_and_execute_reboost():
             print("Reboost Complete. Waiting 5 seconds before continuing...")
@@ -86,8 +93,14 @@ def click_rapid_icon():
             print(f"Sleeping for {sleep_time:.2f} seconds...")
             time.sleep(sleep_time)
         else:
-            print("Retrying in 2 seconds...")
-            time.sleep(2)
+            if e >= 3:
+                break
+            e += 1
+            print("Attempt", e)
+            print("Rapid heal not found, switching to prayer tab...")
+            locate_and_click_any(IMAGE_PATHS["prayers"], is_double_click=False)
+            print("Retrying in 5 seconds...")
+            time.sleep(5)
 
 if __name__ == "__main__":
-    click_rapid_icon()
+    run_actions()
