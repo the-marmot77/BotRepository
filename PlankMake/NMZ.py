@@ -1,35 +1,39 @@
-import time
-import random
-import numpy as np
+from __future__ import annotations
 
-from pyclick import HumanClicker
+import random
+import time
+from pathlib import Path
+from typing import Iterable
+
 import pyautogui
+from pyclick import HumanClicker
 
 from utilities.geometry import Rectangle
 from utilities.imagesearch import search_img_in_rect
 
-hc = HumanClicker()
+pyautogui.FAILSAFE = True
 
-# Paths to all images
+hc = HumanClicker()
+ASSETS = Path(__file__).resolve().parent / "BotImages"
 IMAGE_PATHS = {
-    "inventorys": [
-        "PlankMake/BotImages/Inventory.png",
-        "PlankMake/BotImages/Inventory2.png",
+    "inventory": [
+        ASSETS / "Inventory.png",
+        ASSETS / "Inventory2.png",
     ],
     "prayers": [
-        "PlankMake/BotImages/Prayer_icon.png",
-        "PlankMake/BotImages/Prayer_icon2.png",
-        "PlankMake/BotImages/Prayer_icon3.png",
+        ASSETS / "Prayer_icon.png",
+        ASSETS / "Prayer_icon2.png",
+        ASSETS / "Prayer_icon3.png",
     ],
-    "rapids": [
-        "PlankMake/BotImages/Rapid_Heal.png",
-        "PlankMake/BotImages/Rapid_Heal2.png",
+    "rapid": [
+        ASSETS / "Rapid_Heal.png",
+        ASSETS / "Rapid_Heal2.png",
     ],
     "potions": [
-        "PlankMake/BotImages/Super_combat_potion(4).png",
-        "PlankMake/BotImages/Super_combat_potion(3).png",
-        "PlankMake/BotImages/Super_combat_potion(2).png",
-        "PlankMake/BotImages/Super_combat_potion(1).png",
+        ASSETS / "Super_combat_potion(4).png",
+        ASSETS / "Super_combat_potion(3).png",
+        ASSETS / "Super_combat_potion(2).png",
+        ASSETS / "Super_combat_potion(1).png",
     ],
 }
 
@@ -37,79 +41,82 @@ CLICK_INTERVAL_RANGE = (30.0, 36.0)
 DURATION_LIMIT = 420
 start_time = time.time()
 
-def capture_screen():
-    screenshot = pyautogui.screenshot()
-    return np.array(screenshot)
 
-def locate_and_click(image_path, is_double_click=False, confidence=0.2):
+def locate_and_click(
+    image_path: Path, is_double_click: bool = False, confidence: float = 0.2
+) -> bool:
     screen_rect = Rectangle(0, 0, pyautogui.size().width, pyautogui.size().height)
-    found_rect = search_img_in_rect(image_path, screen_rect, confidence=confidence)
+    found_rect = search_img_in_rect(str(image_path), screen_rect, confidence=confidence)
 
-    if found_rect:
-        center_x, center_y = found_rect.get_center()
-        hc.move((center_x, center_y), duration=random.uniform(1.1, 3.0))
-
-        if is_double_click:
-            pyautogui.doubleClick(interval=0.1)
-        else:
-            pyautogui.click()
-
-        print(f"Clicked on {image_path} at ({center_x}, {center_y})")
-        return True
-    else:
-        print(f"Could not locate {image_path}.")
+    if not found_rect:
+        print(f"[nmz] Could not locate {image_path.name}")
         return False
 
-def locate_and_click_any(image_paths, is_double_click=False, confidence=0.2):
+    center_x, center_y = found_rect.get_center()
+    hc.move((center_x, center_y), duration=random.uniform(1.1, 3.0))
+    if is_double_click:
+        pyautogui.doubleClick(interval=0.1)
+    else:
+        pyautogui.click()
+
+    print(f"[nmz] Clicked {image_path.name} at ({center_x}, {center_y})")
+    return True
+
+
+def locate_and_click_any(
+    image_paths: Iterable[Path], is_double_click: bool = False, confidence: float = 0.2
+) -> bool:
     for path in image_paths:
         if locate_and_click(path, is_double_click=is_double_click, confidence=confidence):
             return True
     return False
 
-def check_and_execute_reboost():
+
+def check_and_execute_reboost() -> bool:
     global start_time
 
-    if time.time() - start_time > DURATION_LIMIT:
-        print("420 seconds have passed. Reboosting.")
+    if time.time() - start_time <= DURATION_LIMIT:
+        return False
 
-        if locate_and_click_any(IMAGE_PATHS["inventorys"]):
-            for potion in IMAGE_PATHS["potions"]:
-                if locate_and_click(potion, confidence=0.7):
-                    start_time = time.time()
-                    break
+    print("[nmz] 420 seconds passed. Triggering reboost.")
 
-            locate_and_click_any(IMAGE_PATHS["prayers"])
-            print("Reboost successful.")
-        else:
-            print("Could not locate inventory.")
-        return True
-    return False
+    if locate_and_click_any(IMAGE_PATHS["inventory"]):
+        for potion in IMAGE_PATHS["potions"]:
+            if locate_and_click(potion, confidence=0.7):
+                start_time = time.time()
+                break
 
-def run_actions():
+        locate_and_click_any(IMAGE_PATHS["prayers"])
+        print("[nmz] Reboost successful.")
+    else:
+        print("[nmz] Could not locate inventory.")
+    return True
 
-    time.sleep(5)
+
+def run_actions() -> None:
     hc.move((100, 100), 2)
-    e = 0
+    consecutive_failures = 0
 
     while True:
         if check_and_execute_reboost():
-            print("Reboost Complete. Waiting 5 seconds before continuing...")
+            print("[nmz] Waiting 5 seconds before resuming...")
             time.sleep(5)
             continue
 
-        if locate_and_click_any(IMAGE_PATHS["rapids"], is_double_click=True):
+        if locate_and_click_any(IMAGE_PATHS["rapid"], is_double_click=True):
             sleep_time = random.uniform(*CLICK_INTERVAL_RANGE)
-            print(f"Sleeping for {sleep_time:.2f} seconds...")
+            print(f"[nmz] Sleeping for {sleep_time:.2f} seconds...")
             time.sleep(sleep_time)
+            consecutive_failures = 0
         else:
-            if e >= 3:
+            consecutive_failures += 1
+            if consecutive_failures >= 3:
+                print("[nmz] Rapid Heal not found three times. Exiting.")
                 break
-            e += 1
-            print("Attempt", e)
-            print("Rapid heal not found, switching to prayer tab...")
-            locate_and_click_any(IMAGE_PATHS["prayers"], is_double_click=False)
-            print("Retrying in 5 seconds...")
+            print(f"[nmz] Rapid Heal not found (attempt {consecutive_failures}). Trying prayers...")
+            locate_and_click_any(IMAGE_PATHS["prayers"])
             time.sleep(5)
+
 
 if __name__ == "__main__":
     run_actions()
