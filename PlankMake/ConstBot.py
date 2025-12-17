@@ -1,16 +1,21 @@
-from PIL import ImageGrab
-from functools import partial
-from pyautogui import ImageNotFoundException
-import pyautogui
-import time
+from __future__ import annotations
+
 import random
+import time
+from functools import partial
+from pathlib import Path
+
+import pyautogui
+from PIL import ImageGrab
 
 # Configure ImageGrab to capture all screens
 ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
+pyautogui.FAILSAFE = True
 
 # Define RGB values for the butler and the bench colors
 butler_color = (144, 0, 173)  # Butler: FF9000AD -> (144, 0, 173)
 bench_color = (255, 231, 0)  # Bench: FFFFFE700 -> (255, 231, 0)
+ASSETS = Path(__file__).resolve().parent / "BotImages"
 
 
 def find_color_position(color, tolerance=10):
@@ -71,18 +76,14 @@ def remove_teak_bench():
 
 def check_for_butler_payment():
     """Check if the Butler is asking for payment and pay him."""
-    try:
-        payment_prompt = pyautogui.locateOnScreen("ButlerPayment.png", confidence=0.9)
-        if payment_prompt is not None:
-            pyautogui.press("space")
-            time.sleep(0.5)
-            pyautogui.press("1")
-            time.sleep(0.5)
-            pyautogui.press("space")
-            time.sleep(2)  # Short pause after payment
-    except ImageNotFoundException:
-        # If the image is not found, do nothing and continue
-        pass
+    payment_prompt = pyautogui.locateOnScreen(str(ASSETS / "ButlerPayment.png"), confidence=0.9)
+    if payment_prompt:
+        pyautogui.press("space")
+        time.sleep(0.5)
+        pyautogui.press("1")
+        time.sleep(0.5)
+        pyautogui.press("space")
+        time.sleep(2)
 
 
 def automate_construction():

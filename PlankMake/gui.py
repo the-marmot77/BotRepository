@@ -1,60 +1,100 @@
-import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
+from __future__ import annotations
+
 import threading
-import PlankMake  # Import the main bot script
+from tkinter import messagebox
 
-bot_thread = None  # Track the bot execution thread
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import W
 
-def start_bot(iterations_entry, min_delay_entry, max_delay_entry, status_label):
-    global bot_thread
-    iterations = int(iterations_entry.get())
-    min_delay = float(min_delay_entry.get())
-    max_delay = float(max_delay_entry.get())
+from .plankmake_bot import run_bot, stop_bot
 
-    if bot_thread is None or not bot_thread.is_alive():
-        bot_thread = threading.Thread(
-            target=PlankMake.run_bot, args=(iterations, min_delay, max_delay), daemon=True
+
+class PlankMakeGUI:
+    """Simple ttkbootstrap front-end for the plank maker bot."""
+
+    def __init__(self) -> None:
+        self._thread: threading.Thread | None = None
+        self.root = ttk.Window(themename="cyborg")
+        self.root.title("Plank Make Bot")
+        self.root.geometry("360x240")
+        self._build_form()
+
+    def _build_form(self) -> None:
+        frame = ttk.Frame(self.root, padding=12)
+        frame.pack(expand=True, fill="both")
+
+        ttk.Label(frame, text="Iterations:", bootstyle="inverse-dark").grid(
+            row=0, column=0, sticky=W
         )
-        bot_thread.start()
-        status_label.config(text="Status: Running", bootstyle="success")
+        self.iterations_entry = ttk.Entry(frame, width=10, bootstyle="dark")
+        self.iterations_entry.grid(row=0, column=1, padx=(8, 0))
+        self.iterations_entry.insert(0, "30")
 
-def stop_bot(status_label):
-    PlankMake.stop_bot()
-    status_label.config(text="Status: Stopped", bootstyle="danger")
+        ttk.Label(frame, text="Min Delay (s):", bootstyle="inverse-dark").grid(
+            row=1, column=0, sticky=W
+        )
+        self.min_delay_entry = ttk.Entry(frame, width=10, bootstyle="dark")
+        self.min_delay_entry.grid(row=1, column=1, padx=(8, 0))
+        self.min_delay_entry.insert(0, "95")
 
-root = ttk.Window(themename="cyborg")  # Your preferred color scheme
-root.title("PlankMake Bot")
-root.geometry("400x250")
+        ttk.Label(frame, text="Max Delay (s):", bootstyle="inverse-dark").grid(
+            row=2, column=0, sticky=W
+        )
+        self.max_delay_entry = ttk.Entry(frame, width=10, bootstyle="dark")
+        self.max_delay_entry.grid(row=2, column=1, padx=(8, 0))
+        self.max_delay_entry.insert(0, "105")
 
-frame = ttk.Frame(root, padding="10")
-frame.pack(expand=True, fill="both")
+        ttk.Button(
+            frame,
+            text="Start",
+            command=self._on_start,
+            bootstyle="success-outline",
+        ).grid(row=3, column=0, columnspan=2, pady=(16, 6), sticky="ew")
 
-ttk.Label(frame, text="Iterations:", bootstyle="inverse-dark").grid(row=0, column=0, sticky=ttk.W)
-iterations_entry = ttk.Entry(frame, width=10, bootstyle="dark")
-iterations_entry.grid(row=0, column=1)
-iterations_entry.insert(0, "30")
+        ttk.Button(
+            frame,
+            text="Stop",
+            command=self._on_stop,
+            bootstyle="danger-outline",
+        ).grid(row=4, column=0, columnspan=2, sticky="ew")
 
-ttk.Label(frame, text="Min Delay:", bootstyle="inverse-dark").grid(row=1, column=0, sticky=ttk.W)
-min_delay_entry = ttk.Entry(frame, width=10, bootstyle="dark")
-min_delay_entry.grid(row=1, column=1)
-min_delay_entry.insert(0, "95")
+        self.status = ttk.Label(frame, text="Status: Idle", bootstyle="inverse-dark")
+        self.status.grid(row=5, column=0, columnspan=2, pady=(12, 0), sticky=W)
 
-ttk.Label(frame, text="Max Delay:", bootstyle="inverse-dark").grid(row=2, column=0, sticky=ttk.W)
-max_delay_entry = ttk.Entry(frame, width=10, bootstyle="dark")
-max_delay_entry.grid(row=2, column=1)
-max_delay_entry.insert(0, "105")
+    def _on_start(self) -> None:
+        try:
+            iterations = int(self.iterations_entry.get())
+            min_delay = float(self.min_delay_entry.get())
+            max_delay = float(self.max_delay_entry.get())
+        except ValueError:
+            messagebox.showerror("Plank Make Bot", "Enter numeric values for all fields.")
+            return
 
-start_button = ttk.Button(frame, text="Start Bot",
-    command=lambda: start_bot(iterations_entry, min_delay_entry, max_delay_entry, status_label),
-    bootstyle="success-outline")
-start_button.grid(row=3, column=0, columnspan=2, pady=10)
+        if iterations <= 0:
+            messagebox.showwarning("Plank Make Bot", "Iterations must be positive.")
+            return
 
-stop_button = ttk.Button(frame, text="Stop Bot",
-    command=lambda: stop_bot(status_label),
-    bootstyle="danger-outline")
-stop_button.grid(row=4, column=0, columnspan=2)
+        if self._thread and self._thread.is_alive():
+            messagebox.showinfo("Plank Make Bot", "Bot already running.")
+            return
 
-status_label = ttk.Label(frame, text="Status: Idle", bootstyle="inverse-dark")
-status_label.grid(row=5, column=0, columnspan=2, pady=5)
+        self._thread = threading.Thread(
+            target=run_bot, args=(iterations, min_delay, max_delay), daemon=True
+        )
+        self._thread.start()
+        self.status.config(text="Status: Running", bootstyle="success")
 
-root.mainloop()
+    def _on_stop(self) -> None:
+        stop_bot()
+        self.status.config(text="Status: Stopped", bootstyle="danger")
+
+    def run(self) -> None:
+        self.root.mainloop()
+
+
+def launch() -> None:
+    PlankMakeGUI().run()
+
+
+if __name__ == "__main__":
+    launch()
